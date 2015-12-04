@@ -7,7 +7,7 @@ var mPerPixel = 0.0;
 var colors = [
     '#ffffff', '#fed410', '#008dcb', '#c10000',
     '#8700b6', '#f2282a', '#00c400', '#e47300',
-    '#00b2fc', '#880090', '#008800', '#008dcb',
+    '#00b2fc', '#330090', '#008800', '#440055',
     '#3cff4d', '#ff00ff', '#ff0000', '#121212'
 ];
 
@@ -27,51 +27,42 @@ var Ball = function(i) {
         this.c = colors[i];
     }
 
-    // white ball
-    // (0)
-    if (i == 0) {
-        this.resetWhitePosition();
+    this.getStartPosition = function(index) {
+        col = 1;
+        row = 0;
+        end = baseOfTriangle;
+        i = 0;
+
+        while (true) {
+            i++;
+
+            if (row >= end) {
+                row = 1;
+                col++;
+                end--;
+            }
+            else {
+                row++;
+            }
+            
+            if (i >= index)
+                return { col: col, row: row };
+        }
     }
+
+    // white ball
+    if (i == 0)
+        this.resetWhitePosition();
 
     // color balls
-    // (1)
-    //    (6)
-    // (2)   (10)
-    //    (7)   (13)
-    // (3)   (11)  (15)
-    //    (8)   (14)
-    // (4)   (12)
-    //    (9)
-    // (5)
-    switch (i) {
-        // column 1
-        case 1:  this.x = 40; this.y = 40;  break;
-        case 2:  this.x = 40; this.y = 60;  break;
-        case 3:  this.x = 40; this.y = 80;  break;
-        case 4:  this.x = 40; this.y = 100; break;
-        case 5:  this.x = 40; this.y = 120; break;
-        // column 2
-        case 6:  this.x = 64; this.y = 50;  break;
-        case 7:  this.x = 64; this.y = 70;  break;
-        case 8:  this.x = 64; this.y = 90;  break;
-        case 9:  this.x = 64; this.y = 110; break;
-        // column 3
-        case 10: this.x = 88; this.y = 60;  break;
-        case 11: this.x = 88; this.y = 80;  break;
-        case 12: this.x = 88; this.y = 100; break;
-        // column 4
-        case 13: this.x = 110; this.y = 70; break;
-        case 14: this.x = 110; this.y = 90; break;
-        // column 5
-        case 15: this.x = 132; this.y = 80; break;
-    } 
-
-    // gap from table border
     if (i > 0) {
-        this.x += 70;
-        this.y += 70;
+        col = this.getStartPosition(i).col;
+        row = this.getStartPosition(i).row;
+
+        this.x = startTablePadding.x + col * (2 * this.r) + 2;
+        this.y = startTablePadding.y + (this.r * col) + row * (2 * this.r);
     }
-    
+
     this.opacity = 1;
     this.xVelocity = 0;
     this.yVelocity = 0;
@@ -79,8 +70,8 @@ var Ball = function(i) {
     this.yAccel = 0;
     this.bounceLoss = bounceLoss;
     this.tableFriction = tableFriction;
+    this.c = (i == 0)? '#ffffff' : getRandomColor();
     this.c = colors[i];
-
     this.index = i;
 }
 
@@ -104,14 +95,14 @@ Ball.prototype.Update = function(table) {
 
     var bounce = false;
 
-    // ball at bottom edge 
+    // ball at bottom edge
     if (this.y >= table.height - this.r) {
         this.y = table.height - this.r;
         this.yVelocity = -this.yVelocity;
         this.yAccel = -this.yAccel;
         bounce = true;
     }
-    // ball at top edge 
+    // ball at top edge
     else if (this.y <= this.r) {
         this.y = this.r;
         this.yVelocity = -this.yVelocity;
@@ -119,14 +110,14 @@ Ball.prototype.Update = function(table) {
         bounce = true;
     }
 
-    // ball at right edge 
+    // ball at right edge
     if (this.x >= table.width - this.r) {
         this.x = table.width - this.r;
         this.xVelocity = -this.xVelocity;
         this.xAccel = -this.xAccel;
         bounce = true;
     }
-    // ball at left edge 
+    // ball at left edge
     else if (this.x <= this.r) {
         this.x = this.r;
         this.xVelocity = -this.xVelocity;
@@ -156,7 +147,7 @@ Ball.prototype.Strike = function(xImpact, yImpact) {
 Ball.prototype.TestImpact = function() {
     for (var i = this.index + 1; i < balls.length; i++) {
         var ball = balls[i];
-        
+
         if (Dist(this.x, this.y, ball.x, ball.y) > this.r + ball.r)
             continue;
 

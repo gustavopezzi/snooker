@@ -1,8 +1,13 @@
+// get amount of balls using the formula of triangular numbers
+var baseOfTriangle = 5;
+var N = ((baseOfTriangle * (baseOfTriangle + 1)) / 2) + 1;
+
 var balls = [];
 var table;
 var w = window.innerWidth;
 var h = window.innerHeight;
-var N = 16;
+var startTablePadding = {x: 70, y: 70};
+var minVelocity = 0.0001;
 var mouseDownX = 0;
 var mouseDownY = 0;
 var mouse = {
@@ -13,6 +18,14 @@ var mouse = {
     px: 0,
     py: 0
 };
+
+function getRandomColor() {
+    var letters = '0123456789'.split('');
+    var color = '#';
+    for (var i = 0; i < 6; i++)
+        color += letters[Math.floor(Math.random() * 10)];
+    return color;
+}
 
 function Dist(x1, y1, x2, y2) {
     var diffX = x2 - x1;
@@ -44,10 +57,13 @@ function CollideBalls(ball, ball2) {
 function HitBall() {
     var tempBall = balls[0];
     
+    if (tempBall.xVelocity > 0.001 || tempBall.yVelocity > 0.001)
+        return;
+
     if (Dist(tempBall.x + table.xPos, tempBall.y + table.yPos, mouseDownX, mouseDownY) < tempBall.r) {
         var dX = mouseDownX - mouse.x;
         var dY = mouseDownY - mouse.y;
-        tempBall.Strike(dX / 100.0, dY / 100.0);
+        tempBall.Strike(dX / 200.0, dY / 200.0);
     }
 }
 
@@ -165,7 +181,8 @@ $(document).ready(function() {
 
         if (mouse.down == true)
             if (Dist(balls[0].x + table.xPos, balls[0].y + table.yPos, mouseDownX, mouseDownY) < balls[0].r)
-                DrawMouse();
+                if (balls[0].xVelocity < minVelocity && balls[0].yVelocity < minVelocity)
+                    DrawMouse();
 
         requestAnimFrame(draw);
     }
